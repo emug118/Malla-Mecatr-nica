@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Malla Curricular Mechatrónica – EIA</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --col-bg: #ffffff;
+      --approved: #a3d9a5;
+      --locked: #e0e0e0;
+      --hover: #d0e0f0;
+      --tooltip-bg: rgba(0,0,0,0.7);
+      --tooltip-color: #fff;
+      --font: 'Segoe UI', Tahoma, sans-serif;
+    }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      padding: 20px;
+    }
+    h1 { text-align: center; color: #3a4a58; }
+    .grid {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+    }
+    .semester {
+      min-width: 180px;
+      background: var(--col-bg);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .semester h2 {
+      text-align: center;
+      font-size: 1.1em;
+      margin-bottom: 10px;
+      color: #2f3e4d;
+    }
+    .subject {
+      position: relative;
+      padding: 8px;
+      margin-bottom: 6px;
+      border-radius: 6px;
+      background: var(--col-bg);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .subject.approved {
+      background: var(--approved);
+      text-decoration: line-through;
+      color: #2f3e4d;
+    }
+    .subject:not(.approved):hover {
+      background: var(--hover);
+    }
+    .subject.locked {
+      background: var(--locked);
+      cursor: not-allowed;
+    }
+    .subject.locked:hover .tooltip {
+      display: block;
+    }
+    .tooltip {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--tooltip-bg);
+      color: var(--tooltip-color);
+      padding: 4px 8px;
+      font-size: 0.8em;
+      border-radius: 4px;
+      white-space: nowrap;
+      margin-top: 4px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <h1>Malla Curricular Ingeniería Mecatrónica (EIA)</h1>
+  <div class="grid" id="malla"></div>
+
+  <script>
+    const materias = [
+      {id:'calcD', nombre:'Cálculo Diferencial', sem:1, req:[]},
+      {id:'algebra', nombre:'Álgebra Lineal', sem:1, req:[]},
+      {id:'fisicaM', nombre:'Física Mecánica', sem:1, req:[]},
+      {id:'quim', nombre:'Química General', sem:1, req:[]},
+      {id:'prog', nombre:'Fund. de Programación', sem:2, req:['calcD']},
+      {id:'calcI', nombre:'Cálculo Integral', sem:2, req:['calcD']},
+      {id:'geom', nombre:'Geometría', sem:2, req:[]},
+      {id:'exprGra', nombre:'Expresión Gráfica', sem:2, req:[]},
+      {id:'ecuDif', nombre:'Ecuaciones Diferenciales', sem:3, req:['calcI','algebra']},
+      {id:'fisOnd', nombre:'Física de Ondas', sem:3, req:['fisicaM','calcI']},
+      {id:'analNum', nombre:'Análisis Numérico', sem:3, req:['prog','calcI']},
+      {id:'elecDigi', nombre:'Electrónica Digital y Microcontroladores', sem:4, req:['prog','fisOnd']},
+      {id:'mecaMate', nombre:'Mecánica de Materiales', sem:4, req:['fisOnd']},
+      {id:'controlAn', nombre:'Control Análogo', sem:4, req:['elecDigi','analNum']},
+      // puedes seguir agregando semestres 5–10...
+    ];
+    const aprob = JSON.parse(localStorage.getItem('aprobadas')||'[]');
+
+    function save() { localStorage.setItem('aprobadas', JSON.stringify(aprob)); }
+    function render() {
+      const root = document.getElementById('malla');
+      root.innerHTML = '';
+      const maxSem = Math.max(...materias.map(m=>m.sem));
+      for(let s=1; s<=maxSem; s++){
+        const col = document.createElement('div');
+        col.className = 'semester';
+        col.innerHTML = `<h2>Semestre ${s}</h2>`;
+        materias.filter(m=>m.sem===s).forEach(m=>{
+          const d = document.createElement('div');
+          d.className = 'subject';
+          d.textContent = m.nombre;
+          if(aprob.includes(m.id)) d.classList.add('approved');
+
+          const ok = m.req.every(r=>aprob.includes(r));
+          if(!ok){
+            d.classList.add('locked');
+            const falt = m.req.filter(r=>!aprob.includes(r))
+              .map(r=> materias.find(x=>x.id===r).nombre ).join(', ');
+            const tip = document.createElement('div');
+            tip.className='tooltip';
+            tip.textContent = `Requiere: ${falt}`;
+            d.appendChild(tip);
+          }
+          d.addEventListener('click', ()=>{
+            if(d.classList.contains('locked')) return;
+            const idx = aprob.indexOf(m.id);
+            if(idx>-1) aprob.splice(idx,1);
+            else aprob.push(m.id);
+            save(); render();
+          });
+          col.appendChild(d);
+        });
+        root.appendChild(col);
+      }
+    }
+    render();
+  </script>
+</body>
+</html>
