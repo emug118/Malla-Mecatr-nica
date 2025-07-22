@@ -1,92 +1,158 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Malla Curricular Mecatrónica – EIA</title>
+  <meta charset="UTF-8">
+  <title>Malla Curricular Mecatrónica EIA</title>
   <style>
-    :root {
-      --fondo: #f8f9fb;
-      --card: #ffffff;
-      --aprobada: #b2f2bb;
-      --bloqueada: #e9ecef;
-      --hover: #dee2ff;
-      --tooltip-bg: rgba(0, 0, 0, 0.7);
-      --tooltip-text: #fff;
-      --fuente: 'Segoe UI', sans-serif;
-    }
     body {
-      font-family: var(--fuente);
-      background: var(--fondo);
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
       padding: 20px;
+      background: #f4f6f8;
     }
     h1 {
       text-align: center;
-      color: #343a40;
+      color: #2c3e50;
     }
     .grid {
       display: flex;
-      gap: 16px;
       overflow-x: auto;
-      padding-bottom: 20px;
-    }
-    .semestre {
-      min-width: 200px;
-      background: var(--card);
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      gap: 16px;
       padding: 10px;
     }
-    .semestre h2 {
+    .sem {
+      min-width: 200px;
+      background: white;
+      border-radius: 6px;
+      padding: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .sem h2 {
       text-align: center;
-      font-size: 1em;
-      margin-bottom: 10px;
-      color: #495057;
+      font-size: 1.1em;
+      color: #2c3e50;
+      margin-bottom: 8px;
     }
     .materia {
       position: relative;
       margin: 5px 0;
       padding: 8px;
-      background: var(--card);
-      border-radius: 6px;
+      background: #ffffff;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
       cursor: pointer;
       transition: background 0.2s;
     }
     .materia:hover {
-      background: var(--hover);
+      background: #e2f0ff;
     }
     .materia.aprobada {
-      background: var(--aprobada);
+      background: #b9fbc0;
       text-decoration: line-through;
-      color: #343a40;
     }
     .materia.bloqueada {
-      background: var(--bloqueada);
+      background: #f1f3f5;
+      color: #999;
       cursor: not-allowed;
     }
-    .materia.bloqueada:hover .tooltip {
-      display: block;
-    }
-    .tooltip {
+    .materia .tooltip {
       display: none;
       position: absolute;
       top: 100%;
       left: 50%;
       transform: translateX(-50%);
-      background: var(--tooltip-bg);
-      color: var(--tooltip-text);
+      background: rgba(0, 0, 0, 0.75);
+      color: #fff;
       padding: 4px 8px;
       font-size: 0.75em;
       border-radius: 4px;
-      white-space: nowrap;
       margin-top: 4px;
+      white-space: nowrap;
       z-index: 10;
+    }
+    .materia.bloqueada:hover .tooltip {
+      display: block;
     }
   </style>
 </head>
 <body>
-  <h1>Malla Curricular Ingeniería Mecatrónica – EIA</h1>
-  <div class="grid" id="malla"></div>
+<h1>Malla Curricular Ingeniería Mecatrónica – EIA</h1>
+<div class="grid" id="malla"></div>
+
+<script>
+const materias = [
+  // Semestre 1
+  {id:'intro', nombre:'Introducción a la Ingeniería', s:1, req:[]},
+  {id:'quimica', nombre:'Química General', s:1, req:[]},
+  {id:'prog1', nombre:'Programación', s:1, req:[]},
+  {id:'comunicacion', nombre:'Comunicación y Ciencias', s:1, req:[]},
+  {id:'geometria', nombre:'Geometría', s:1, req:[]},
+  {id:'calculo1', nombre:'Cálculo Diferencial', s:1, req:[]},
+  {id:'opt1', nombre:'Optativa I', s:1, req:[]},
+
+  // Semestre 2
+  {id:'calculo2', nombre:'Cálculo Integral', s:2, req:['calculo1']},
+  {id:'algebra', nombre:'Álgebra Lineal', s:2, req:['calculo1']},
+  {id:'fisica1', nombre:'Física Mecánica', s:2, req:[]},
+  {id:'bd', nombre:'Bases de Datos', s:2, req:['prog1']},
+  {id:'psoftware', nombre:'Programación y Software Mecatrónica', s:2, req:['prog1']},
+  {id:'dibujo', nombre:'Dibujo Mecánico', s:2, req:[]},
+  {id:'proy1', nombre:'Proyecto I', s:2, req:[]},
+
+  // Semestre 3
+  {id:'materiales', nombre:'Ciencia de los Materiales', s:3, req:['quimica']},
+  {id:'termo', nombre:'Termodinámica y Mecánica de Fluidos', s:3, req:['fisica1']},
+  {id:'osh', nombre:'Optativa Sociohumanística', s:3, req:[]},
+  {id:'estatica', nombre:'Estática', s:3, req:['fisica1']},
+  {id:'fcampos', nombre:'Física de Campos', s:3, req:['fisica1']},
+  {id:'calcv', nombre:'Cálculo en Varias Variables', s:3, req:['calculo2']},
+
+  // Semestre 4
+  {id:'proc', nombre:'Procesos de Transformación', s:4, req:['materiales']},
+  {id:'oleo', nombre:'Oleoneumática', s:4, req:['termo']},
+  {id:'matmec', nombre:'Mecánica de Materiales', s:4, req:['materiales','estatica']},
+  {id:'dinamica', nombre:'Dinámica', s:4, req:['estatica']},
+  {id:'edif', nombre:'Ecuaciones Diferenciales', s:4, req:['calcv']},
+  {id:'electronica', nombre:'Electrónica', s:4, req:['fcampos']},
+
+  // Semestre 5
+  {id:'ss', nombre:'Señales y Sistemas', s:5, req:['edif']},
+  {id:'eco', nombre:'Ingeniería Económica', s:5, req:[]},
+  {id:'epm', nombre:'Electrónica de Potencia y Máquinas', s:5, req:['electronica']},
+  {id:'msm', nombre:'Modelos y Simulación de Sistemas Mecatrónicos', s:5, req:['edif','psoftware']},
+  {id:'smec', nombre:'Sistemas Mecánicos', s:5, req:['matmec']},
+  {id:'dmac', nombre:'Diseño y Manufactura Asistidos por Computador', s:5, req:['dibujo']},
+
+  // Semestre 6
+  {id:'embebidos', nombre:'Sistemas Embebidos', s:6, req:['ss']},
+  {id:'cptc', nombre:'Control de Procesos en Tiempo Continuo', s:6, req:['msm']},
+  {id:'iap', nombre:'Instrumentación y Automatización de Procesos', s:6, req:['cptc']},
+  {id:'reto', nombre:'Reto Empresarismo', s:6, req:[]},
+  {id:'prob', nombre:'Probabilidad y Estadística', s:6, req:['calcv']},
+  {id:'invsoc', nombre:'Innovación Social', s:6, req:[]},
+  {id:'fep', nombre:'Formulación y Evaluación de Proyectos', s:6, req:['eco']},
+
+  // Semestre 7
+  {id:'robot', nombre:'Robótica', s:7, req:['iap']},
+  {id:'cdsd', nombre:'Control Digital de Sistemas Dinámicos', s:7, req:['cptc']},
+  {id:'redes', nombre:'Comunicaciones y Redes Industriales', s:7, req:['embebidos']},
+  {id:'ogl', nombre:'Optativa Gestión y Liderazgo', s:7, req:[]},
+  {id:'elec1', nombre:'Electiva I', s:7, req:[]},
+  {id:'elec2', nombre:'Electiva II', s:7, req:[]},
+
+  // Semestre 8
+  {id:'ia', nombre:'IA en Sistemas Mecatrónicos', s:8, req:['cdsd']},
+  {id:'dm', nombre:'Diseño Mecatrónico', s:8, req:['robot']},
+  {id:'ie', nombre:'Innovación Empresarial', s:8, req:['reto','fep']},
+  {id:'elec3', nombre:'Electiva III', s:8, req:[]},
+  {id:'elec4', nombre:'Electiva IV', s:8, req:[]},
+  {id:'cc', nombre:'Competencias Ciudadanas', s:8, req:[]},
+
+  // Semestre 9
+  {id:'elec5', nombre:'Electiva V', s:9, req:[]},
+  {id:'spe', nombre:'Semestre de Proyectos Especiales', s:9, req:[]},
+];
+
+const aprobadas
 
 
