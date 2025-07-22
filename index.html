@@ -1,137 +1,92 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Malla Mecatrónica EIA</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Malla Curricular Mecatrónica – EIA</title>
   <style>
     :root {
-      --bg: #fafafa; --col-bg: #fff; --apr: #c3e6cb;
-      --lock: #f0f0f0; --hov: #dbe9f4;
-      --tip-bg: rgba(0,0,0,0.7); --tip-fg: #fff;
-      --font: 'Segoe UI', sans-serif;
+      --fondo: #f8f9fb;
+      --card: #ffffff;
+      --aprobada: #b2f2bb;
+      --bloqueada: #e9ecef;
+      --hover: #dee2ff;
+      --tooltip-bg: rgba(0, 0, 0, 0.7);
+      --tooltip-text: #fff;
+      --fuente: 'Segoe UI', sans-serif;
     }
-    body { font-family: var(--font); background: var(--bg); padding: 20px; }
-    h1 { text-align:center; color:#3a4a58; }
-    .grid { display:flex; gap:16px; overflow-x:auto; }
-    .sem { min-width:160px; background:var(--col-bg); border-radius:6px; padding:10px; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
-    .sem h2 { text-align:center; font-size:1em; margin:8px 0; color:#2f3e4d; }
-    .subj { position:relative; padding:6px; margin-bottom:5px; border-radius:4px; background:var(--col-bg); cursor:pointer; transition:background 0.2s; }
-    .subj.apr { background:var(--apr); text-decoration:line-through; color:#2f3e4d; }
-    .subj:not(.apr):hover { background:var(--hov); }
-    .subj.lock { background:var(--lock); cursor:not-allowed; }
-    .subj.lock:hover .tip { display:block; }
-    .tip { display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%); background:var(--tip-bg); color:var(--tip-fg); padding:4px 6px; font-size:0.8em; border-radius:4px; white-space:nowrap; margin-top:4px; }
+    body {
+      font-family: var(--fuente);
+      background: var(--fondo);
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #343a40;
+    }
+    .grid {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      padding-bottom: 20px;
+    }
+    .semestre {
+      min-width: 200px;
+      background: var(--card);
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      padding: 10px;
+    }
+    .semestre h2 {
+      text-align: center;
+      font-size: 1em;
+      margin-bottom: 10px;
+      color: #495057;
+    }
+    .materia {
+      position: relative;
+      margin: 5px 0;
+      padding: 8px;
+      background: var(--card);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .materia:hover {
+      background: var(--hover);
+    }
+    .materia.aprobada {
+      background: var(--aprobada);
+      text-decoration: line-through;
+      color: #343a40;
+    }
+    .materia.bloqueada {
+      background: var(--bloqueada);
+      cursor: not-allowed;
+    }
+    .materia.bloqueada:hover .tooltip {
+      display: block;
+    }
+    .tooltip {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--tooltip-bg);
+      color: var(--tooltip-text);
+      padding: 4px 8px;
+      font-size: 0.75em;
+      border-radius: 4px;
+      white-space: nowrap;
+      margin-top: 4px;
+      z-index: 10;
+    }
   </style>
 </head>
 <body>
-  <h1>Malla Curricular Ingeniería Mecatrónica (EIA)</h1>
+  <h1>Malla Curricular Ingeniería Mecatrónica – EIA</h1>
   <div class="grid" id="malla"></div>
-  <script>
-    const materias = [
-      // Basado en estructura EIA (PDF currículo EIA) semestres 1–10 :contentReference[oaicite:6]{index=6}
-      {id:'MB146',nombre:'Cálculo Diferencial',s:1,req:[]},
-      {id:'MB223',nombre:'Física I',s:1,req:[]},
-      {id:'MB312',nombre:'Química General',s:1,req:[]},
-      {id:'MB844',nombre:'Comunicación y Escritura',s:1,req:[]},
-      {id:'MB894',nombre:'Ética Profesional',s:1,req:[]},
-      {id:'MC505',nombre:'Dibujo Técnico y Geometría',s:1,req:[]},
-      // Sem 2
-      {id:'MB147',nombre:'Cálculo Integral',s:2,req:['MB146']},
-      {id:'MB165',nombre:'Álgebra Lineal',s:2,req:['MB146']},
-      {id:'MB224',nombre:'Física II',s:2,req:['MB223']},
-      {id:'MC112',nombre:'Ciencia de Materiales',s:2,req:['MB312']},
-      {id:'MC509',nombre:'Dibujo Mecánico',s:2,req:['MC505']},
-      {id:'MS112',nombre:'Habilidades Sociales',s:2,req:[]},
-      // Sem 3
-      {id:'MB148',nombre:'Cálculo Vectorial',s:3,req:['MB147']},
-      {id:'MB226',nombre:'Física III',s:3,req:['MB224']},
-      {id:'MB545',nombre:'Programación OO',s:3,req:['MB165']},
-      {id:'MB613',nombre:'Estadística y Probabilidades',s:3,req:['MB147']},
-      {id:'MC337',nombre:'Estática',s:3,req:['MB147','MB223']},
-      // Sem 4
-      {id:'MB155',nombre:'Ecuaciones Diferenciales',s:4,req:['MB148']},
-      {id:'MC338',nombre:'Dinámica',s:4,req:['MC337']},
-      {id:'MC361',nombre:'Resistencia de Materiales',s:4,req:['MC337']},
-      {id:'MC401',nombre:'Elementos de Máquinas',s:4,req:[]},
-      {id:'ML140',nombre:'Circuitos Eléctricos',s:4,req:['MB226']},
-      {id:'MN121',nombre:'Termodinámica',s:4,req:['MB224','MB312']},
-      // Sem 5
-      {id:'MB158',nombre:'Análisis Complejo y Fourier',s:5,req:['MB155']},
-      {id:'ML121',nombre:'Lab. Circuitos Eléctricos',s:5,req:['ML140']},
-      {id:'ML202',nombre:'Máquinas Eléctricas',s:5,req:['ML140']},
-      {id:'ML831',nombre:'Electrónica Analógica y Potencia',s:5,req:['ML140']},
-      {id:'MN204',nombre:'Mecánica de Fluidos',s:5,req:['MB155','MB224']},
-      {id:'MT127',nombre:'Digitales y Microcontroladores',s:5,req:['MB165','ML140']},
-      // Sem 6
-      {id:'MB536',nombre:'Métodos Numéricos',s:6,req:['MB155','MB545']},
-      {id:'MC216',nombre:'Procesos de Manufactura',s:6,req:['MC112','MC509']},
-      {id:'MN310',nombre:'Transferencia de Calor',s:6,req:['MN121','MN204']},
-      {id:'MT235',nombre:'Control Clásico',s:6,req:['MB158']},
-      {id:'MT247',nombre:'Sensores y Acond. Señal',s:6,req:['ML831','MT127']},
-      {id:'MT516',nombre:'Dinámica Multicuerpo',s:6,req:['MB155','MC338']},
-      // Sem 7
-      {id:'MC571',nombre:'Vibraciones Mecánicas',s:7,req:['MB536','MC361']},
-      {id:'ML839',nombre:'Electrónica de Potencia',s:7,req:['ML831']},
-      {id:'MN465',nombre:'Lab. Mecánica Ingeniería',s:7,req:['MN121','MN204']},
-      {id:'MT136',nombre:'Sistemas Embebidos',s:7,req:['MT127']},
-      {id:'MT227',nombre:'Control Moderno y Óptimo',s:7,req:['MT235']},
-      {id:'MT242',nombre:'Sistemas Electro‑Hidráulicos',s:7,req:['ML121','MN204']},
-      {id:'MT417',nombre:'Procesamiento Digital de Señales',s:7,req:['MB158','MB536']},
-      // Sem 8
-      {id:'MC516',nombre:'Elementos Finitos I',s:8,req:['MB165','MC361']},
-      {id:'MS614',nombre:'Entorno y Sostenibilidad',s:8,req:[]},
-      {id:'MT325',nombre:'Sistemas en Tiempo Real',s:8,req:['MB536','MT235']},
-      {id:'MT335',nombre:'Redes y Comunicaciones',s:8,req:['MB545','MT127']},
-      {id:'MT418',nombre:'DSP Avanzado',s:8,req:['MB158','MT417']},
-      {id:'MT517',nombre:'Robótica',s:8,req:['MT516']},
-      {id:'MT736',nombre:'Sistemas Manufactura Reconfigurable',s:8,req:['MC216']},
-      // Sem 9
-      {id:'MC601',nombre:'Metodología de Investigación',s:9,req:['MB536']},
-      {id:'MS213',nombre:'Economía de Ingeniería',s:9,req:[]},
-      {id:'MT228',nombre:'Control Digital',s:9,req:['MT227','MT417']},
-      {id:'MT233',nombre:'Control de Procesos',s:9,req:['MT127','MT242']},
-      {id:'MT616',nombre:'Inteligencia Artificial',s:9,req:['MT227']},
-      {id:'MT723',nombre:'Diseño Máquinas Automáticas',s:9,req:['MC338','MT517']},
-      // Sem 10
-      {id:'MS311',nombre:'Derecho Empresarial',s:10,req:[]},
-      {id:'MS525',nombre:'Gestión de Calidad',s:10,req:['MS213']},
-      {id:'MT818',nombre:'Proyecto Mecatrónico',s:10,req:['MC601']},
-    ];
-    const apr = JSON.parse(localStorage.getItem('apr')||'[]');
-    function save(){ localStorage.setItem('apr',JSON.stringify(apr)) }
-    function render(){
-      const root = document.getElementById('malla');
-      root.innerHTML = '';
-      const maxS = Math.max(...materias.map(m=>m.s));
-      for(let s=1;s<=maxS;s++){
-        const col = document.createElement('div'); col.className='sem';
-        col.innerHTML=`<h2>Sem ${s}</h2>`;
-        materias.filter(m=>m.s===s).forEach(m=>{
-          const d=document.createElement('div'); d.className='subj'; d.textContent=m.nombre;
-          if(apr.includes(m.id)) d.classList.add('apr');
-          const ok = m.req.every(r=>apr.includes(r));
-          if(!ok){
-            d.classList.add('lock');
-            const falt=m.req.filter(r=>!apr.includes(r)).map(r=>{
-              return materias.find(x=>x.id===r).nombre;
-            }).join(', ');
-            const tip=document.createElement('div'); tip.className='tip';
-            tip.textContent=`Requiere: ${falt}`; d.appendChild(tip);
-          }
-          d.addEventListener('click',()=>{
-            if(d.classList.contains('lock')) return;
-            const i=apr.indexOf(m.id);
-            if(i>-1) apr.splice(i,1); else apr.push(m.id);
-            save(); render();
-          });
-          col.appendChild(d);
-        });
-        root.appendChild(col);
-      }
-    }
-    render();
-  </script>
-</body>
-</html>
+
 
